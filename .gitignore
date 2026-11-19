@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+quscribe_output/
+quscribe_evaluation/
+.quscribe_venv/
+.env
+runs/
+data/
+quscribe.egg-info/
+ghz_*
+.DS_Store
+.vscode/

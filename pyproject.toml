@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quscribe"
+version = "0.1.0"
+description = "Reference-free verified Qiskit code generation from quantum circuit diagrams in research papers."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Joyce Kimojino-Weiss" }]
+dependencies = [
+    "qiskit>=1.2",
+    "qiskit-qasm3-import>=0.5",
+    "matplotlib>=3.8",
+    "pylatexenc>=2.10",
+    "pillow>=10.0",
+    "numpy>=1.26",
+    "anthropic>=0.40",
+    "openai>=1.50",
+    "gradio>=4.44",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+quscribe = "quscribe.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["quscribe*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["tests"]
