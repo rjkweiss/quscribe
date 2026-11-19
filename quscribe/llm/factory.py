@@ -138,5 +138,5 @@ def create_vision_model(
     return OpenAICompatibleVisionModel(
         model_name,
         usage_tracker,
-        base_url=spec.base_url
+        base_url=spec.base_url,
     )

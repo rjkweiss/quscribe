@@ -1,0 +1,27 @@
+{
+  "figure_id": "ghz_state",
+  "title": "Three-Qubit GHZ State Preparation",
+  "caption": "Preparation of the GHZ state (|000⟩ + |111⟩)/√2 using a Hadamard and a chain of CNOTs. Measuring all qubits yields 000 or 111, each with probability 1/2.",
+  "num_qubits": 3,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top",
+    "q[2]": "wire 3 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "circuit",
+  "checkable_claims": [
+    "prepares (|000> + |111>)/sqrt(2)",
+    "outcomes 000 and 111 each with probability 1/2"
+  ],
+  "expected_outcome": {
+    "000": 0.5,
+    "111": 0.5
+  },
+  "unitary_target": null,
+  "reference_qasm": "qasm/ghz_state.qasm",
+  "reference_check": "simulated outcome distribution {'000': 0.5, '111': 0.5} matches expected {'000': 0.5, '111': 0.5}",
+  "verified": true
+}

@@ -1,0 +1,24 @@
+{
+  "figure_id": "qft_3qubit",
+  "title": "Three-Qubit Quantum Fourier Transform",
+  "caption": "Quantum Fourier transform on three qubits. R_k denotes the controlled phase rotation diag(1, exp(2πi / 2^k)); the final SWAP restores the qubit order. This transform is the core subroutine of phase estimation and Shor's algorithm.",
+  "num_qubits": 3,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top",
+    "q[2]": "wire 3 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "circuit",
+  "checkable_claims": [
+    "implements the 3-qubit QFT",
+    "R_k = diag(1, exp(2*pi*i/2^k))"
+  ],
+  "expected_outcome": null,
+  "unitary_target": "qft3",
+  "reference_qasm": "qasm/qft_3qubit.qasm",
+  "reference_check": "unitary equals qft3 up to global phase",
+  "verified": true
+}

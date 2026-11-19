@@ -15,6 +15,8 @@ class PipelineSettings:
         verifier_model: Model for independent reading, redraw comparison, and
             claim extraction; None reuses the primary model. A different
             model makes the verifier more independent.
+        generator_model: Model that writes the Qiskit code; None reuses the
+            primary model.
         use_text_context: Whether to send the caption and paper text
             (ablation switch).
         max_repair_iterations: Repair attempts after a failed verification
@@ -29,6 +31,7 @@ class PipelineSettings:
 
     primary_model: ModelSpec = field(default_factory=ModelSpec)
     verifier_model: ModelSpec | None = None
+    generator_model: ModelSpec | None = None
     use_text_context: bool = True
     max_repair_iterations: int = 3
     max_attempts_per_call: int = 3
@@ -69,6 +72,46 @@ class PipelineSettings:
             self.max_output_tokens > 0,
             "max_output_tokens must be positive.",
         )
+
+    def model_roles(self) -> dict[str, str]:
+        """
+        Describe which model plays each role, for the web app, the CLI
+        and reports.
+
+        Args:
+        None.
+
+        Returns:
+            dict[str, str]: Role name mapped to "model (provider)".
+
+        Raises:
+            ConfigurationError: If a role's model name cannot be resolved.
+        """
+        return {
+            "Transcription and repair": _describe_model(self.primary_model),
+            "Code generation": _describe_model(
+                self.generator_model or self.primary_model
+            ),
+            "Verification": _describe_model(
+                self.verifier_model or self.primary_model
+            ),
+        }
+
+
+def _describe_model(spec: ModelSpec) -> str:
+    """
+    Format a model specification for people to read.
+
+    Args:
+        spec: The model specification.
+
+    Returns:
+        str: For example "claude-opus-5-5 (anthropic)".
+
+    Raises:
+        ConfigurationError: If the model name cannot be resolved.
+    """
+    return f"{spec.resolved_model_name()} ({spec.provider.value})"
 
 
 def _require(condition: bool, message: str) -> None:

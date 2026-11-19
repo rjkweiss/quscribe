@@ -1,5 +1,6 @@
 """
-Command-line interface: ``quscribe convert | synthesize | evaluate | app``.
+Command-line interface:
+``quscribe convert | synthesize | import-figures | evaluate | app``.
 
 Exit status: 0 when the work succeeded (for ``convert``: the code was
 verified), 1 when ``convert`` produced flagged code, and 2 on errors.
@@ -243,6 +244,19 @@ def _add_pipeline_arguments(parser: argparse.ArgumentParser) -> None:
         help="Server URL for the verifier model.",
     )
     parser.add_argument(
+        "--generator-provider",
+        choices=PROVIDER_CHOICES,
+        help="Separate provider for code generation."
+    )
+    parser.add_argument(
+        "--generator-model",
+        help="Separate model for code generation."
+    )
+    parser.add_argument(
+        "--generator-base-url",
+        help="Server URL for the code-generation model."
+    )
+    parser.add_argument(
         "--max-repairs",
         type=int,
         default=DEFAULTS.max_repair_iterations,
@@ -284,27 +298,59 @@ def _settings_from_arguments(
     Raises:
         ConfigurationError: If a value is out of range.
     """
-    verifier_model = None
-    if arguments.verifier_provider or arguments.verifier_model:
-        verifier_model = ModelSpec(
-            provider=ModelProvider(
-                arguments.verifier_provider or arguments.provider
-            ),
-            model_name=arguments.verifier_model,
-            base_url=arguments.verifier_base_url,
-        )
     return PipelineSettings(
         primary_model=ModelSpec(
             ModelProvider(arguments.provider),
             arguments.model,
-            arguments.base_url
+            arguments.base_url,
         ),
-        verifier_model=verifier_model,
+        verifier_model=_optional_model_spec(
+            arguments.verifier_provider,
+            arguments.verifier_model,
+            arguments.verifier_base_url,
+            arguments.provider
+        ),
+        generator_model=_optional_model_spec(
+            arguments.generator_provider,
+            arguments.generator_model,
+            arguments.generator_base_url,
+            arguments.provider
+        ),
         use_text_context=not arguments.no_text_context,
         max_repair_iterations=arguments.max_repairs,
         max_attempts_per_call=arguments.max_attempts,
         fidelity_threshold=arguments.fidelity_threshold,
         code_timeout_seconds=arguments.code_timeout,
+    )
+
+
+def _optional_model_spec(
+    provider_value: str | None,
+    model_name: str | None,
+    base_url: str | None,
+    default_provider: str
+) -> ModelSpec | None:
+    """
+    Build the model specification for an optional role, if any of its flags
+    were given.
+
+    Args:
+        provider_value: The role's provider flag, or None.
+        model_name: The role's model flag, or None.
+        base_url: The role's server URL flag, or None.
+        default_provider: The primary provider, used when only a model name
+            is given.
+
+    Returns:
+        ModelSpec | None: The specification, or None when the role reuses the
+            primary model.
+    """
+    if not provider_value and not model_name:
+        return None
+    return ModelSpec(
+        ModelProvider(provider_value or default_provider),
+        model_name,
+        base_url
     )
 
 
@@ -328,12 +374,11 @@ def _run_convert(arguments: argparse.Namespace) -> int:
         arguments.caption,
         paper_text,
     )
-    result = (
-        PipelineBuilder.from_settings(_settings_from_arguments(arguments))
-        .build()
-        .run(circuit_input)
-    )
+    settings = _settings_from_arguments(arguments)
+    result = PipelineBuilder.from_settings(settings).build().run(circuit_input)
     _write_convert_outputs(result, arguments.output_dir)
+    for role, model in settings.model_roles().items():
+        print(f"{role}: {model}")
     print(f"Trust label: {result.label.value}")
     if result.error_message:
         print(f"Stopped early: {result.error_message}")

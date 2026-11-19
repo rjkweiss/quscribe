@@ -1,0 +1,27 @@
+{
+  "figure_id": "qpe_t_gate",
+  "title": "Phase Estimation of the T Gate (Core of Shor's Algorithm)",
+  "caption": "Quantum phase estimation with three counting qubits (q0–q2) and target q3 prepared in the eigenstate |1⟩ of T. The counting qubits control T, T² = S, and T⁴ = Z, followed by the inverse QFT. Since T has eigenphase 1/8 = 0.001 in binary, measuring q0 q1 q2 yields 001 with probability 1.",
+  "num_qubits": 4,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top",
+    "q[2]": "wire 3 from top",
+    "q[3]": "wire 4 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "circuit",
+  "checkable_claims": [
+    "eigenphase of T is 1/8",
+    "measuring q0q1q2 yields 001 with probability 1"
+  ],
+  "expected_outcome": {
+    "001": 1.0
+  },
+  "unitary_target": null,
+  "reference_qasm": "qasm/qpe_t_gate.qasm",
+  "reference_check": "simulated outcome distribution {'001': 1.0} matches expected {'001': 1.0}",
+  "verified": true
+}

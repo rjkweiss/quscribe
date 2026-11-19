@@ -18,7 +18,7 @@ from quscribe.components.verification.verifiers import ReferenceFreeVerifier
 from quscribe.core.execution.executor import CircuitCodeExecutor
 from quscribe.core.usage import UsageTracker
 from quscribe.llm.base import VisionLanguageModel
-from quscribe.llm.factory import create_vision_model
+from quscribe.llm.factory import ModelSpec, create_vision_model
 from quscribe.pipeline.orchestrator import QuScribePipeline
 from quscribe.pipeline.settings import PipelineSettings
 
@@ -38,14 +38,19 @@ class PipelineBuilder:
         primary_model: VisionLanguageModel,
         verifier_model: VisionLanguageModel,
         usage_tracker: UsageTracker,
+        generator_model: VisionLanguageModel | None = None
     ) -> None:
-        """Create a builder from ready-made models.
+        """
+        Create a builder from ready-made models.
 
         Args:
             settings: The pipeline settings.
-            primary_model: Model for parsing, generation and repair.
+            primary_model: Model for parsing and repair, and for code
+                generation by default.
             verifier_model: Model for verification (may be the same object).
             usage_tracker: The tracker both models record into.
+            generator_model: Model for code generation; None uses the
+                primary model.
 
         Returns:
             None.
@@ -54,6 +59,9 @@ class PipelineBuilder:
         self._primary_model = primary_model
         self._verifier_model = verifier_model
         self._usage_tracker = usage_tracker
+        self._generator_model = (
+            generator_model if generator_model is not None else primary_model
+        )
 
     @classmethod
     def from_settings(cls, settings: PipelineSettings) -> "PipelineBuilder":
@@ -74,20 +82,59 @@ class PipelineBuilder:
         primary_model = create_vision_model(
             settings.primary_model,
             usage_tracker,
-            settings.max_output_tokens
+            settings.max_output_tokens,
+        )
+        verifier_model = cls._model_or_fallback(
+            settings.verifier_model,
+            primary_model,
+            usage_tracker,
+            settings,
+        )
+        generator_model = cls._model_or_fallback(
+            settings.generator_model,
+            primary_model,
+            usage_tracker,
+            settings,
+        )
+        return cls(
+            settings,
+            primary_model,
+            verifier_model,
+            usage_tracker,
+            generator_model=generator_model,
         )
 
-        verifier_model = (
-            primary_model
-            if settings.verifier_model is None
-            else create_vision_model(
-                settings.verifier_model,
-                usage_tracker,
-                settings.max_output_tokens
-            )
-        )
+    @staticmethod
+    def _model_or_fallback(
+        spec: ModelSpec | None,
+        fallback: VisionLanguageModel,
+        usage_tracker: UsageTracker,
+        settings: PipelineSettings,
+    ) -> VisionLanguageModel:
+        """
+        Create a client for an optional role, or reuse the fallback client.
 
-        return cls(settings, primary_model, verifier_model, usage_tracker)
+        Args:
+            spec: The role's model specification, or None to reuse the
+                fallback.
+            fallback: The client to reuse.
+            usage_tracker: The tracker a new client records into.
+            settings: Supplies the reply token limit.
+
+        Returns:
+            VisionLanguageModel: The client for the role.
+
+        Raises:
+            ConfigurationError: If the specification or credentials are
+                                invalid.
+        """
+        if spec is None:
+            return fallback
+        return create_vision_model(
+            spec,
+            usage_tracker,
+            settings.max_output_tokens,
+        )
 
     def build(self, verifier: Verifier | None = None) -> QuScribePipeline:
         """
@@ -109,7 +156,7 @@ class PipelineBuilder:
         )
 
         generator = CodeGenerator(
-            self._primary_model,
+            self._generator_model,
             CircuitCodeExecutor(settings.code_timeout_seconds),
             settings.fidelity_threshold,
             settings.max_attempts_per_call,

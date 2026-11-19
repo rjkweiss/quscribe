@@ -133,3 +133,27 @@ def test_verified_run_shows_verified_badge() -> None:
         [CheckResult("check", CheckStatus.PASSED, "Matches.")]
     )
     assert "Verified" in build_result_view(make_result(report)).label_html
+
+
+def test_usage_panel_names_the_model_behind_each_role() -> None:
+    """
+    The cost-and-time panel starts with the models used, then the
+    usage figures.
+
+    Args:
+        None.
+
+    Returns:
+        None.
+    """
+    roles = {
+        "Transcription and repair": "qwen3.5:9b (ollama)",
+        "Verification": "claude-opus-5-5 (anthropic)",
+    }
+    view = build_result_view(make_result(report=None), roles)
+    assert view.usage_markdown.startswith(
+        "**Models used**\n"
+        "- Transcription and repair: qwen3.5:9b (ollama)"
+    )
+    assert "- Verification: claude-opus-5-5 (anthropic)" in view.usage_markdown
+    assert "- Model calls: 2" in view.usage_markdown

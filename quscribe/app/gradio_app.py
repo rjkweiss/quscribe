@@ -25,15 +25,20 @@ MODEL_PRESETS = {
         ModelProvider.ANTHROPIC,
         "claude-sonnet-5-5"
     ),
+    "GPT-6.2 Astra": ModelSpec(
+        ModelProvider.OPENAI,
+        "gpt-6.2-astra"
+    ),
+    "GPT-6.2 Sol": ModelSpec(
+        ModelProvider.OPENAI,
+        "gpt-6.2-sol"
+    ),
     "Qwen3.5 9B (local, Ollama)": ModelSpec(
         ModelProvider.OLLAMA,
         "qwen3.5:9b"
     ),
-    "GPT Astra 6.2": ModelSpec(
-        ModelProvider.OPENAI,
-        "gpt-6.2-astra"
-    )
 }
+
 SAME_AS_TRANSCRIPTION_MODEL = "Same as the transcription model"
 VERIFIER_CHOICES = [SAME_AS_TRANSCRIPTION_MODEL, *MODEL_PRESETS]
 
@@ -71,6 +76,7 @@ class QuScribeWebApp:
         use_text_context: bool,
         max_repair_iterations: float,
         verifier_choice: str,
+        generator_choice: str,
     ) -> tuple:
         """
         Run the pipeline for one request; Gradio calls this on button click.
@@ -90,6 +96,8 @@ class QuScribeWebApp:
             verifier_choice: A preset name for the verifier model, or the
                 same-model option. It replaces any verifier given on the
                 command line.
+            generator_choice: A preset name for the code-generation model, or
+                the same-model option.
 
         Returns:
             tuple: Values for the output components, in ``ResultView``
@@ -109,6 +117,7 @@ class QuScribeWebApp:
             ),
             use_text_context=use_text_context,
             max_repair_iterations=int(max_repair_iterations),
+            generator_model=MODEL_PRESETS.get(generator_choice)
         )
 
         try:
@@ -121,7 +130,10 @@ class QuScribeWebApp:
         except (ConfigurationError, InvalidInputError) as error:
             raise gradio.Error(str(error)) from error
 
-        return build_result_view(pipeline.run(circuit_input)).as_outputs()
+        return build_result_view(
+            pipeline.run(circuit_input),
+            settings.model_roles()
+        ).as_outputs()
 
     def build_interface(self) -> gradio.Blocks:
         """
@@ -178,6 +190,11 @@ class QuScribeWebApp:
                             value=defaults.max_repair_iterations,
                             label="Repair attempts",
                         )
+                        generator_input = gradio.Dropdown(
+                            choices=VERIFIER_CHOICES,
+                            value=SAME_AS_TRANSCRIPTION_MODEL,
+                            label="Code generation model"
+                        )
                         verifier_input = gradio.Dropdown(
                             choices=VERIFIER_CHOICES,
                             value=SAME_AS_TRANSCRIPTION_MODEL,
@@ -227,7 +244,8 @@ class QuScribeWebApp:
                     model_name_input,
                     use_text_input,
                     repair_input,
-                    verifier_input
+                    verifier_input,
+                    generator_input
                 ],
                 outputs=[
                     label_output,

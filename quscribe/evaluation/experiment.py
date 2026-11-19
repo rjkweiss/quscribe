@@ -11,7 +11,7 @@ The standard ablations answer the proposal's evaluation questions:
 
 import logging
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 
 from qiskit import QuantumCircuit
 
@@ -129,11 +129,14 @@ class ExperimentReport:
     Attributes:
         summaries: One summary per configuration.
         item_evaluations: Every scored item, for per-item and
-                            per-style analysis.
+            per-style analysis.
+        model_roles: Which model played each role, so results can be
+            reproduced.
     """
 
     summaries: tuple[ConfigurationSummary, ...]
     item_evaluations: tuple[ItemEvaluation, ...]
+    model_roles: dict[str, str] = field(default_factory=dict)
 
     def to_markdown(self) -> str:
         """Format the summaries as a markdown table.
@@ -155,9 +158,13 @@ class ExperimentReport:
             for summary in self.summaries
         ]
 
-        return "\n".join(
-            ["# QuScribe evaluation", "", header, separator, *rows]
-        ) + "\n"
+        model_lines = [
+            f"- {role}: {model}" for role, model in self.model_roles.items()
+        ]
+        return "\n".join([
+            "# QuScribe evaluation", "", *model_lines,
+            "", header, separator, *rows
+        ]) + "\n"
 
 
 class ExperimentRunner:
@@ -216,7 +223,8 @@ class ExperimentRunner:
 
         return ExperimentReport(
             summaries=tuple(summaries),
-            item_evaluations=tuple(all_evaluations)
+            item_evaluations=tuple(all_evaluations),
+            model_roles=self._base_settings.model_roles(),
         )
 
     def _evaluate_configuration(

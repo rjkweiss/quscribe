@@ -1,0 +1,26 @@
+{
+  "figure_id": "bell_state",
+  "title": "Bell State Preparation",
+  "caption": "Preparation of the Bell state (|00⟩ + |11⟩)/√2 using a Hadamard followed by a CNOT. Measuring both qubits yields 00 or 11, each with probability 1/2.",
+  "num_qubits": 2,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "circuit",
+  "checkable_claims": [
+    "prepares (|00> + |11>)/sqrt(2)",
+    "outcomes 00 and 11 each with probability 1/2"
+  ],
+  "expected_outcome": {
+    "00": 0.5,
+    "11": 0.5
+  },
+  "unitary_target": null,
+  "reference_qasm": "qasm/bell_state.qasm",
+  "reference_check": "simulated outcome distribution {'00': 0.5, '11': 0.5} matches expected {'00': 0.5, '11': 0.5}",
+  "verified": true
+}

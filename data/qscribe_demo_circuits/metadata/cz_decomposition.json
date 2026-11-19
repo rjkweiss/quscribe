@@ -1,0 +1,22 @@
+{
+  "figure_id": "cz_decomposition",
+  "title": "Controlled-Z from a CNOT",
+  "caption": "The controlled-Z gate (left) is equivalent to a CNOT conjugated by Hadamard gates on the target qubit (right).",
+  "num_qubits": 2,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "equation (LHS = RHS)",
+  "checkable_claims": [
+    "right-hand side equals CZ"
+  ],
+  "expected_outcome": null,
+  "unitary_target": "cz",
+  "reference_qasm": "qasm/cz_decomposition.qasm",
+  "reference_check": "unitary equals cz up to global phase",
+  "verified": true
+}

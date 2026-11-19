@@ -1,0 +1,24 @@
+{
+  "figure_id": "toffoli_decomposition",
+  "title": "Toffoli Gate Decomposition",
+  "caption": "The Toffoli (CCNOT) gate (left) decomposed into six CNOTs, two Hadamards, and T / T† gates (right).",
+  "num_qubits": 3,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top",
+    "q[2]": "wire 3 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "equation (LHS = RHS)",
+  "checkable_claims": [
+    "right-hand side equals Toffoli (CCX)",
+    "uses 6 CNOTs"
+  ],
+  "expected_outcome": null,
+  "unitary_target": "ccx",
+  "reference_qasm": "qasm/toffoli_decomposition.qasm",
+  "reference_check": "unitary equals ccx up to global phase",
+  "verified": true
+}

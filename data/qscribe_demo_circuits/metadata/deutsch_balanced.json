@@ -1,0 +1,25 @@
+{
+  "figure_id": "deutsch_balanced",
+  "title": "Deutsch's Algorithm (Balanced Oracle)",
+  "caption": "Deutsch's algorithm with a balanced oracle, f(x) = x, implemented as a CNOT from q0 to the ancilla q1. Measuring q0 yields 1, identifying f as balanced.",
+  "num_qubits": 2,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "circuit",
+  "checkable_claims": [
+    "f is balanced",
+    "measuring q0 yields 1 with probability 1"
+  ],
+  "expected_outcome": {
+    "1": 1.0
+  },
+  "unitary_target": null,
+  "reference_qasm": "qasm/deutsch_balanced.qasm",
+  "reference_check": "simulated outcome distribution {'1': 1.0} matches expected {'1': 1.0}",
+  "verified": true
+}

@@ -1,0 +1,26 @@
+{
+  "figure_id": "teleportation_deferred",
+  "title": "Quantum Teleportation (Deferred Measurement)",
+  "caption": "Teleportation of the state |ψ⟩ = TH|0⟩, prepared on q0 by an H then a T gate, to q2. Measurements are deferred: the classical corrections are replaced by a CNOT from q1 and a CZ from q0. Undoing the preparation (T†, then H) on q2 returns |0⟩, so measuring q2 yields 0 with probability 1.",
+  "num_qubits": 3,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top",
+    "q[2]": "wire 3 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "circuit",
+  "checkable_claims": [
+    "q2 ends in the state prepared on q0",
+    "measuring q2 yields 0 with probability 1"
+  ],
+  "expected_outcome": {
+    "0": 1.0
+  },
+  "unitary_target": null,
+  "reference_qasm": "qasm/teleportation_deferred.qasm",
+  "reference_check": "simulated outcome distribution {'0': 1.0} matches expected {'0': 1.0}",
+  "verified": true
+}

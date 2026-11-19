@@ -3,7 +3,7 @@ Turns pipeline results into the text, HTML and images the web demo displays.
 """
 
 import html
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, fields
 
 from PIL import Image
@@ -74,12 +74,16 @@ class ResultView:
         )
 
 
-def build_result_view(result: PipelineResult) -> ResultView:
+def build_result_view(
+    result: PipelineResult,
+    model_roles: Mapping[str, str] | None = None,
+) -> ResultView:
     """
     Format a pipeline result for display.
 
     Args:
         result: The pipeline result.
+        model_roles: Which model played each role, shown with cost and time.
 
     Returns:
         ResultView: Display-ready values for every output panel.
@@ -96,7 +100,8 @@ def build_result_view(result: PipelineResult) -> ResultView:
         repair_markdown=format_repair_markdown(result.repair_steps),
         usage_markdown=format_usage_markdown(
             result.usage,
-            result.wall_clock_seconds
+            result.wall_clock_seconds,
+            model_roles
         ),
     )
 
@@ -177,19 +182,32 @@ def format_repair_markdown(repair_steps: Sequence[RepairStep]) -> str:
 
 def format_usage_markdown(
     usage: UsageSummary,
-    wall_clock_seconds: float
+    wall_clock_seconds: float,
+    model_roles: Mapping[str, str] | None = None
 ) -> str:
     """
-    Render model usage and timing.
+    Render the models used, then model usage and timing.
 
     Args:
         usage: Model usage for the run.
         wall_clock_seconds: Total run time.
+        model_roles: Which model played each role; omitted when None.
 
     Returns:
         str: Markdown text.
     """
+    model_lines = [
+        f"- {role}: {model}"
+        for role, model in (model_roles or {}).items()
+    ]
+    models_section = (
+        ["**Models used**", *model_lines, "", "**Cost and time**"]
+        if model_lines
+        else []
+    )
     return "\n".join([
+        *models_section,
+        f"- Model calls: {usage.call_count}",
         f"- Model calls: {usage.call_count}",
         f"- Input tokens: {usage.input_tokens:,}",
         f"- Output tokens: {usage.output_tokens:,}",
@@ -211,7 +229,10 @@ def _render_preview(result: PipelineResult) -> Image.Image | None:
     if result.parsed is None:
         return None
     try:
-        return render_circuit(result.parsed.circuit).to_pil_image()
+        return render_circuit(
+            result.parsed.circuit,
+            show_named_gate_contents=True
+        ).to_pil_image()
     except RenderingError:
         return None
 

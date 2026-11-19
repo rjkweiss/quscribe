@@ -117,9 +117,6 @@ def bell_input() -> CircuitInput:
     """
     Build a figure input whose caption states the Bell distribution.
 
-    Args:
-        None.
-
     Returns:
         CircuitInput: The test input.
     """
@@ -130,13 +127,8 @@ def bell_input() -> CircuitInput:
 
 
 def test_correct_reading_is_verified_without_repair() -> None:
-    """A correct first reading passes every check.
-
-    Args:
-        None.
-
-    Returns:
-        None.
+    """
+    A correct first reading passes every check.
     """
     result = build_pipeline(
         make_responder(BELL_QASM),
@@ -157,12 +149,6 @@ def test_correct_reading_is_verified_without_repair() -> None:
 def test_misreading_is_caught_and_repaired() -> None:
     """
     A missed gate is caught by the verifier and fixed by one repair.
-
-    Args:
-        None.
-
-    Returns:
-        None.
     """
     result = build_pipeline(
         make_responder(MISREAD_QASM),
@@ -179,12 +165,6 @@ def test_misreading_without_repair_budget_is_flagged() -> None:
     """
     With repair disabled, the misreading is flagged rather than returned
     as correct.
-
-    Args:
-        None.
-
-    Returns:
-        None.
     """
     result = build_pipeline(
         make_responder(MISREAD_QASM),
@@ -206,12 +186,6 @@ def test_unusable_model_output_yields_flagged_result_not_exception() -> None:
     """
     When the model never produces valid output, the result is flagged
     with a reason.
-
-    Args:
-        None.
-
-    Returns:
-        None.
     """
 
     def respond_with_prose(
@@ -244,12 +218,6 @@ def test_underspecified_figure_is_flagged_without_retrying() -> None:
     """
     An undefined oracle box stops the run with the reason, after a single
     model call.
-
-    Args:
-        None.
-
-    Returns:
-        None.
     """
 
     def report_missing_oracle(
@@ -280,3 +248,61 @@ def test_underspecified_figure_is_flagged_without_retrying() -> None:
     assert "U_f" in result.error_message
     # Retrying would only pressure the model into inventing gates.
     assert result.usage.call_count == 1
+
+
+def test_code_generation_can_use_its_own_model() -> None:
+    """
+    With a separate generator model, only that model receives code-generation
+    requests.
+    """
+    responder = make_responder(BELL_QASM)
+    prompts_by_model: dict[str, list[str]] = {"primary": [], "generator": []}
+
+    def recording_responder(model_label: str) -> Responder:
+        """
+        Wrap the scripted responder so it records which model was asked what.
+
+        Args:
+            model_label: The key under which to record system prompts.
+
+        Returns:
+            Responder: The recording reply function.
+        """
+
+        def respond(
+            system_prompt: str,
+            messages: Sequence[ChatMessage]
+        ) -> str:
+            """
+            Record the system prompt, then reply as scripted.
+
+            Args:
+                system_prompt: Identifies the stage.
+                messages: The conversation so far.
+
+            Returns:
+                str: The scripted reply.
+            """
+            prompts_by_model[model_label].append(system_prompt)
+            return responder(system_prompt, messages)
+
+        return respond
+
+    tracker = UsageTracker()
+    primary_model = CallbackVisionModel(
+        recording_responder("primary"), tracker
+    )
+    generator_model = CallbackVisionModel(
+        recording_responder("generator"), tracker
+    )
+    pipeline = PipelineBuilder(
+        PipelineSettings(max_repair_iterations=0),
+        primary_model,
+        primary_model,
+        tracker,
+        generator_model=generator_model,
+    ).build()
+    result = pipeline.run(bell_input())
+    assert result.label is TrustLabel.VERIFIED
+    assert prompts_by_model["generator"] == [GENERATOR_SYSTEM_PROMPT]
+    assert GENERATOR_SYSTEM_PROMPT not in prompts_by_model["primary"]

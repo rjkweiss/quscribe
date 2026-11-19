@@ -1,0 +1,28 @@
+{
+  "figure_id": "dj_balanced",
+  "title": "Deutsch–Jozsa Algorithm, n = 3 (Balanced Oracle)",
+  "caption": "Deutsch–Jozsa algorithm on three input qubits with a balanced oracle, f(x) = x0 ⊕ x1 ⊕ x2 ⊕ 1, implemented with CNOTs onto the ancilla q3 and X gates on q1. Any outcome other than 000 identifies f as balanced; this oracle yields 111 with probability 1.",
+  "num_qubits": 4,
+  "category": "dev_demo (textbook circuit; not benchmark data)",
+  "drawing_style": "qscribe-matplotlib (paper-like)",
+  "wire_mapping": {
+    "q[0]": "top wire",
+    "q[1]": "wire 2 from top",
+    "q[2]": "wire 3 from top",
+    "q[3]": "wire 4 from top"
+  },
+  "bit_order": "bitstrings read top-to-bottom (q0 first)",
+  "figure_type": "circuit",
+  "checkable_claims": [
+    "f is balanced",
+    "measuring q0q1q2 never yields 000",
+    "measuring q0q1q2 yields 111 with probability 1"
+  ],
+  "expected_outcome": {
+    "111": 1.0
+  },
+  "unitary_target": null,
+  "reference_qasm": "qasm/dj_balanced.qasm",
+  "reference_check": "simulated outcome distribution {'111': 1.0} matches expected {'111': 1.0}",
+  "verified": true
+}
